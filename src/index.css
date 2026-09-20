@@ -1,0 +1,335 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Urbanist", sans-serif;
+}
+
+html {
+  font-size: 62.5%;
+}
+
+body {
+  width: 100%;
+  background-color: #eff3ff;
+  overflow-x: hidden;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-weight: 900;
+}
+
+h1 {
+  /* scales smoothly: 3.2rem on small phones -> 5.4rem on desktop */
+  font-size: clamp(3.2rem, 6vw + 1rem, 5.4rem);
+  font-weight: bold;
+  color: #000 !important;
+  text-align: center;
+}
+
+p,
+span {
+  font-size: 1.6rem;
+}
+
+li {
+  list-style: none;
+}
+
+span {
+  font-weight: bold;
+}
+
+.container {
+  width: 100%;
+  max-width: 152rem;
+  margin: auto;
+  padding: 0 2.4rem; /* keeps content off the screen edges */
+}
+
+.grid-three-cols {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.6rem;
+  text-align: center;
+  margin: 3.2rem 0;
+  align-items: end;
+}
+
+header {
+  margin: 3.2rem 0;
+}
+
+.pokemon-search {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 3.2rem;
+}
+
+.card-demo {
+  display: flex;
+  justify-content: center;
+
+  & .pokemon-card {
+    min-height: 32rem;
+  }
+}
+
+input[type="text"] {
+  appearance: none;
+  border: none;
+  outline: none;
+  width: 32rem;
+  max-width: 100%; /* never wider than the screen */
+  border-bottom: 0.2em solid #020d35;
+  background: white; /* fixed: rgba(#hex) is Sass, not valid CSS */
+  border-radius: 0.2em 0.2em 0 0;
+  padding: 0.8em;
+  font-size: 1.6rem;
+  color: #000000;
+  -webkit-border-radius: 0.2em 0.2em 0 0;
+  -moz-border-radius: 0.2em 0.2em 0 0;
+  -ms-border-radius: 0.2em 0.2em 0 0;
+  -o-border-radius: 0.2em 0.2em 0 0;
+}
+
+input[type="text"]:focus-visible {
+  box-shadow: 0 0 0 0.3rem rgba(2, 13, 53, 0.35);
+}
+
+/* Auto-fits as many columns as the screen allows: 4 on large, 1 on phones */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(28rem, 1fr));
+  justify-items: center;
+  align-items: center;
+  gap: 3.2rem;
+}
+
+.pokemon-card {
+  width: 100%;
+  max-width: 36rem;
+  min-height: 42rem;
+  box-shadow:
+    rgba(0, 0, 0, 0.05) 0px 6px 24px 0px,
+    rgba(0, 0, 0, 0.08) 0px 0px 0px 1px;
+  background-color: #fff;
+  border-radius: 0.2rem;
+  -webkit-border-radius: 0.2rem;
+  -moz-border-radius: 0.2rem;
+  -ms-border-radius: 0.2rem;
+  -o-border-radius: 0.2rem;
+  padding: 1.6rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.pokemon-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 40%;
+  transform: rotate(180deg);
+  background-color: #ebfbf1;
+  border-radius: 50% 50% 100% 0% / 99% 100% 0% 1%;
+  z-index: 0;
+  border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+  -webkit-border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+  -moz-border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+  -ms-border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+  -o-border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+  transition:
+    transform 0.3s,
+    box-shadow 0.3s;
+}
+
+.pokemon-card:hover::before {
+  -webkit-border-radius: 50% 50% 100% 0% / 99% 100% 0% 1%;
+  -moz-border-radius: 50% 50% 100% 0% / 99% 100% 0% 1%;
+  -ms-border-radius: 50% 50% 100% 0% / 99% 100% 0% 1%;
+  -o-border-radius: 50% 50% 100% 0% / 99% 100% 0% 1%;
+  transition: all 0.3s;
+  -webkit-transition: all 0.3s;
+  -moz-transition: all 0.3s;
+  -ms-transition: all 0.3s;
+  -o-transition: all 0.3s;
+}
+
+/* Hover effects only on devices that actually hover (not touch screens) */
+@media (hover: hover) {
+  .pokemon-card:hover {
+    transform: scale(1.03);
+    transition: all 0.3s;
+    -webkit-transition: all 0.3s;
+    -moz-transition: all 0.3s;
+    -ms-transition: all 0.3s;
+    -o-transition: all 0.3s;
+    box-shadow: rgba(17, 12, 46, 0.15) 0px 48px 100px 0px;
+  }
+}
+
+figure {
+  display: flex;
+  justify-content: center;
+  filter: drop-shadow(0px 50px 100px rgba(50, 50, 93, 0.25));
+}
+
+.pokemon-name {
+  font-size: clamp(2.4rem, 4vw, 3.2rem);
+  text-align: center;
+  color: #000;
+  text-transform: capitalize;
+  margin-top: 2.4rem;
+}
+
+.pokemon-highlight {
+  display: flex;
+  flex-wrap: wrap; /* badges wrap instead of overflowing */
+  justify-content: center;
+  align-items: center;
+  gap: 0.8rem;
+
+  margin: 1.6rem 0;
+
+  & p {
+    padding: 0.6rem 2.4rem;
+    background-color: #2ecc71;
+    border-radius: 20rem;
+    -webkit-border-radius: 20rem;
+    -moz-border-radius: 20rem;
+    -ms-border-radius: 20rem;
+    -o-border-radius: 20rem;
+    color: #fff;
+    font-weight: bold;
+    text-transform: capitalize;
+  }
+}
+
+.pokemon-image {
+  width: 60%;
+  height: 15rem;
+  object-fit: contain; /* keeps sprite proportions */
+}
+
+.pokemon-info {
+  /* fixed: original selector was missing the leading dot */
+  text-align: center;
+}
+
+/* ///////////////////////////////////////// */
+.short-container {
+  width: 100%;
+  max-width: 65rem;
+  margin: 0 auto;
+  padding: 0 2.4rem;
+
+  & h1 {
+    margin-bottom: 3.2rem;
+  }
+
+  & p {
+    margin-bottom: 1.6rem;
+  }
+
+  & button {
+    padding: 0.6rem 1.2rem;
+    cursor: pointer;
+  }
+}
+
+.load-more-btn {
+  display: block;
+  margin: 3.2rem auto;
+  padding: 1.2rem 3.2rem;
+  font-size: 1.6rem;
+  font-weight: bold;
+  color: #fff;
+  background-color: #2ecc71;
+  border: none;
+  border-radius: 20rem;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.load-more-btn:hover {
+  background-color: #27ae60;
+}
+
+.load-more-btn:disabled {
+  background-color: #a5d6b7;
+  cursor: not-allowed;
+}
+
+/* ///////////////////////////////////////// */
+/* Responsive breakpoints                     */
+/* ///////////////////////////////////////// */
+
+/* Tablets and below */
+@media (max-width: 768px) {
+  .container {
+    padding: 0 1.6rem;
+  }
+
+  .grid-three-cols {
+    grid-template-columns: 1fr; /* stack the 3 columns */
+    align-items: start;
+  }
+
+  .cards {
+    gap: 2.4rem;
+  }
+
+  header {
+    margin: 2.4rem 0;
+  }
+}
+
+/* Phones */
+@media (max-width: 480px) {
+  .container,
+  .short-container {
+    padding: 0 1.2rem;
+  }
+
+  .pokemon-search {
+    padding: 0 1.2rem;
+  }
+
+  input[type="text"] {
+    width: 100%;
+  }
+
+  .pokemon-card {
+    min-height: 0;
+    padding: 1.2rem;
+  }
+
+  .pokemon-highlight p {
+    padding: 0.5rem 1.6rem;
+  }
+}
+
+/* Respect users who turn off animations in their system settings */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
+
+  .pokemon-card:hover {
+    transform: none;
+  }
+}
