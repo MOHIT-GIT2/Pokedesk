@@ -1,68 +1,55 @@
 import { useEffect, useState } from "react";
 import "./index.css";
 import PokemonCards from "./PokemonCards";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 
 const Pokemon = () => {
-  //const API = "https://pokeapi.co/api/v2/pokemon?limit=24";
-  const [pokemon, setPokemon] = useState([]);
-  const [loading, setloading] = useState(true);
-  const [error, setError] = useState(null);
+  const API = "https://pokeapi.co/api/v2/pokemon?limit=24";
+
   const [search, setSearch] = useState("");
-  const [nextUrl, setNextUrl] = useState(
-    "https://pokeapi.co/api/v2/pokemon?limit=24",
-  );
-  const [loadingMore, setLoadingMore] = useState(false);
+
   const [allNames, setAllNames] = useState([]);
   const [searchResults, setSearchResults] = useState([]);
 
-  const fetchPokemon = async (url) => {
-    try {
-      setLoadingMore(true);
+  const fetchPokemon2 = async ({ pageParam }) => {
+    const response = await fetch(pageParam);
+    const data = await response.json();
 
-      //fetches api reponse status
-      const response = await fetch(url);
-      if (!response.ok) {
-        throw new Error("Error");
-      }
+    //data has array so we loop and 124 promises gets stored
+    const detailedPokemon = data.results.map(async (curPokemon) => {
+      const pokeResponse = await fetch(curPokemon.url);
+      const pokeData = await pokeResponse.json();
+      return pokeData;
+    });
+    //   console.log(detailedPokemon);
 
-      //fetches data
-      const data = await response.json();
-      //   console.log(data);
-
-      //sets the next url for pagination
-      setNextUrl(data.next);
-
-      //data has array so we loop and 124 promises gets stored
-      const detailedPokemon = data.results.map(async (curPokemon) => {
-        const pokeResponse = await fetch(curPokemon.url);
-        const pokeData = await pokeResponse.json();
-        return pokeData;
-      });
-      //   console.log(detailedPokemon);
-
-      //getting each data from 124 promises
-      const detailedPokemonRespones = await Promise.all(detailedPokemon);
-      //   console.log(detailedPokemonRespones);
-
-      setPokemon((previous) => {
-        const oldIds = new Set(previous.map((p) => p.id));
-        const newIds = detailedPokemonRespones.filter((p) => !oldIds.has(p.id));
-        return [...previous, ...newIds];
-      });
-      setloading(false);
-    } catch (error) {
-      console.log(error);
-      setloading(false);
-      setError(error);
-    } finally {
-      setLoadingMore(false);
-    }
+    //getting each data from 124 promises
+    const detailedPokemonResponses = await Promise.all(detailedPokemon);
+    //return detailedPokemonResponses;
+    return {
+      pokemon: detailedPokemonResponses,
+      next: data.next,
+    };
   };
 
-  //starts from here
-  useEffect(() => {
-    fetchPokemon(nextUrl);
-  }, []);
+  //this is been replaced by infinityQuery for pagination
+  // const query = useQuery({
+  //   queryKey: ["pokemon"],
+  //   queryFn: fetchPokemon2,
+  // });
+
+  //initialParams is to tell where it starts
+  const query = useInfiniteQuery({
+    queryKey: ["pokemon"],
+    queryFn: fetchPokemon2,
+    initialPageParam: API,
+    getNextPageParam: (lastPage) => lastPage.next,
+    staleTime: 10 * 1000,
+  });
+
+  console.log(query);
+  console.log(query.data);
+  console.log(query.isPending);
 
   useEffect(() => {
     const fetchAllNames = async () => {
@@ -78,12 +65,6 @@ const Pokemon = () => {
     };
     fetchAllNames();
   }, []);
-
-  //search functionality
-
-  // const searchData = pokemon.filter((curPokemon) =>
-  //   curPokemon.name.toLowerCase().includes(search.toLowerCase()),
-  // );
 
   const matchNames = search
     ? allNames.filter((p) =>
@@ -108,9 +89,11 @@ const Pokemon = () => {
     fetchMatches();
   }, [search]);
 
-  const displayList = search ? searchResults : pokemon;
+  const allPokemon = query.data?.pages.flatMap((page) => page.pokemon) ?? [];
 
-  if (loading) {
+  const displayList = search ? searchResults : allPokemon;
+
+  if (query.isPending) {
     return (
       <div>
         <h1>Loading....</h1>
@@ -118,10 +101,11 @@ const Pokemon = () => {
     );
   }
 
-  if (error) {
+  if (query.isError) {
     return (
       <div>
-        <h1>{error.message}</h1>
+        <h1>{query.error.message}</h1>
+        {/* {console.log(query.error.message)} */}
       </div>
     );
   }
@@ -149,13 +133,13 @@ const Pokemon = () => {
               );
             })}
           </ul>
-          {nextUrl && !search && (
+          {query.hasNextPage && !search && (
             <button
-              onClick={() => fetchPokemon(nextUrl)}
-              disabled={loadingMore}
+              onClick={() => query.fetchNextPage()}
+              disabled={query.isFetchingNextPage}
               className="load-more-btn"
             >
-              {loadingMore ? "Loading..." : "Load More"}
+              {query.isFetchingNextPage ? "Loading..." : "Load More"}
             </button>
           )}
         </div>
