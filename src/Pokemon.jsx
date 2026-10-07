@@ -7,9 +7,7 @@ const Pokemon = () => {
   const API = "https://pokeapi.co/api/v2/pokemon?limit=24";
 
   const [search, setSearch] = useState("");
-
-  const [allNames, setAllNames] = useState([]);
-  const [searchResults, setSearchResults] = useState([]);
+  const [debouncedSearch, setDebouncedSearch] = useState("");
 
   const fetchPokemon2 = async ({ pageParam }) => {
     const response = await fetch(pageParam);
@@ -47,51 +45,58 @@ const Pokemon = () => {
     staleTime: 10 * 1000,
   });
 
-  console.log(query);
-  console.log(query.data);
-  console.log(query.isPending);
-
   useEffect(() => {
-    const fetchAllNames = async () => {
-      try {
-        const response = await fetch(
-          "https://pokeapi.co/api/v2/pokemon?limit=10000",
-        );
-        const data = await response.json();
-        setAllNames(data.results);
-      } catch (error) {
-        console.log(error);
-      }
-    };
-    fetchAllNames();
-  }, []);
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [search]);
 
-  const matchNames = search
+  const fetchAllNames = async () => {
+    const response = await fetch(
+      "https://pokeapi.co/api/v2/pokemon?limit=10000",
+    );
+    const data = await response.json();
+    return data.results;
+  };
+
+  const queryAllNames = useQuery({
+    queryKey: ["pokemonNames"],
+    queryFn: fetchAllNames,
+  });
+
+  const allNames = queryAllNames.data ?? [];
+
+  const matchNames = debouncedSearch
     ? allNames.filter((p) =>
-        p.name.toLowerCase().includes(search.toLocaleLowerCase()),
+        p.name.toLowerCase().includes(debouncedSearch.toLowerCase()),
       )
     : [];
 
-  useEffect(() => {
-    const fetchMatches = async () => {
-      const toFetch = matchNames.slice(0, 124);
+  const fetchPokemonDetails = async (matchNames, signal) => {
+    const toFetch = matchNames.slice(0, 124);
 
-      const details = await Promise.all(
-        toFetch.map(async (p) => {
-          const res = await fetch(p.url);
-          return res.json();
-        }),
-      );
+    const details = await Promise.all(
+      toFetch.map(async (p) => {
+        const res = await fetch(p.url, { signal });
+        return res.json();
+      }),
+    );
+    return details;
+  };
 
-      setSearchResults(details);
-    };
+  const pokemonDetails = useQuery({
+    queryKey: ["pokemonSearch", debouncedSearch],
+    queryFn: ({ signal }) => fetchPokemonDetails(matchNames, signal),
+  });
 
-    fetchMatches();
-  }, [search]);
+  console.log(pokemonDetails);
 
   const allPokemon = query.data?.pages.flatMap((page) => page.pokemon) ?? [];
 
-  const displayList = search ? searchResults : allPokemon;
+  const displayList = debouncedSearch
+    ? (pokemonDetails.data ?? [])
+    : allPokemon;
 
   if (query.isPending) {
     return (
@@ -109,6 +114,14 @@ const Pokemon = () => {
       </div>
     );
   }
+
+  // if (search && pokemonDetails.isPending) {
+  //   return <h1>Searching...</h1>;
+  // }
+
+  // if (search && pokemonDetails.isError) {
+  //   return <h1>{pokemonDetails.error.message}</h1>;
+  // }
   return (
     <>
       <section className="container">
